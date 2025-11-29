@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+<center>
+<h2>CPS842: Information Retrieval and Web Search</h2>
+
+<h2>Fall 2025</h2>
+</center>
+<hr/>
+
+<center><h3>Assignment 2 (Due date: Nov 1, 2025)</h3></center>
+
+<p><u>Objective</u>: The purpose of assignment 2 is to help you have a better understanding on the vector space retrieval model, gain some experiences of building a complete information retrieval system, and understand the process of evaluating an IR system using some standard test collections.
+</p>
+
+<p><u>Test collection:</u></p>
+<p>You will continue using CACM collection for this assignment. There are three files you need to use: cacm.all (document collection), query.text (query collection), and qrels.text (relevance evaluation).
+</p>
+ 
+<p><u>Requirements:</u></p>
+
+<p>1. 
+You need to have a program <b>invert</b> to do the index construction. You could use the same program from assignment 1, in which postings are ordered in document ID, or you could modify it a little bit to save the postings in the order of term frequency. Other modifications are also allowed in order to have a more efficient retrieval process.
+</p>
+
+<p>2.
+You need to write a program <b>search</b> for the retrieval process using the vector space model. The cosine similarity formula (with length normalization) should be used. Stop word removal and stemming could be turned on or off for both documents and queries. The input to this program would be a free text query (without Boolean operators), and the output would be a list of relevant documents together with their relevance scores. You may implement one (or more) of the top-K retrieval methods in which <i>K</i> is a predefined value, and in this case, the output will only be a list of <i>K</i> relevant documents with their relevance scores.
+
+<p>3.
+You should write a program to implement the user interface (doesn&#39;t have to be graphical interface). Users could interactively enter a query, and the program will return all the relevant results. For each result, the ranking order (e.g. 1, 2, 3), the document title and the author names should be displayed. This program basically uses the output from <b>search</b> program. 
+</p>
+
+<p>4.
+The final part of the assignment is to evaluate the performance of the IR system you have developed. You need to write a program <b>eval</b>. The input to this program would be query.text and qrels.text from CACM. Your program should go through all the queries in query.text, for each query, get all the relevant results from your system (by running <b>search</b>), compare the results with the actual user judgment from qrels.text, and then calculate the average precision (AP) and R-Precision values. The final output will be the mean average precision (MAP) and the average R-Precision values over all queries. 
+</p>
+
+<p>5.
+Write a README file about how to run your programs and a report about details of the programs such as whether postings lists are ordered in document ID or term frequency, whether you have implemented the top-K retreival methods and if so, what the <i>K</i> value is and which method you have chosen, and which variation of tf-idf weighting scheme you used for both documents and queries.
+</p>
+
+<p>6.
+You should submit a zipped file (e.g. cps842f25_a2_yourname.zip) including README, the source code of all programs (<b>invert</b>, <b>search</b>, <b>eval</b> and the interface program), MAP and R-Precision values of your IR system, and the result from a few sample runs (e.g. screenshots) through your interface program.
+</p>
+
+</p>
+
+
+<script type="module" src="https://s.brightspace.com/lib/bsi/2025.10.239/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+						if (document.querySelector('math, .d2l-element, .d2l-cplus-layout') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
+							document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
+								elm.setAttribute('style', 'display: block; height: 0.5rem;');
+							});
+
+							document.querySelectorAll('math mmultiscripts > none').forEach(elm => {
+								const mrow = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
+								elm.replaceWith(mrow);
+							});
+
+							window.D2L.MathJax.loadMathJax({
+								outputScale: 1.5,
+								renderLatex: true,
+								enableMML3Support: false
+							});
+						}
+					});</script><script type="module" src="https://s.brightspace.com/lib/bsi/2025.10.239/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('.d2l-code').forEach(code => {
+						window.D2L.Prism.formatCodeElement(code);
+					});
+				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/2025.10.239/unbundled/embeds.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					window.D2L.EmbedRenderer.renderEmbeds(document.body);
+				});</script></body></html>

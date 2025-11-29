@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html><head></head><body>
+
+
+
+
+
+<center>
+<h2>CPS842: Information Retrieval and Web Search</h2>
+
+<h2>Fall 2025</h2>
+</center>
+<hr/>
+
+<center><h3>Project (Due: Dec. 3, 2025)</h3></center>
+
+<p><u>Project Ideas:</u><br/>
+You can choose the project idea from the following list, or propose your own as long as it is related to the course topic and the workload is adequate. In the latter case, you need to email me a short proposal by <b>Nov. 18, 2025</b>.</p>
+
+<p>1.
+Continue with assignments 1 and 2. You need to use the CACM collection again. This time you will use the information from the citation field (.X). Write a program to implement the PageRank algorithm. The input is the file with the citation information from the CACM collection. The output is the file with PageRank scores for all the documents in CACM. The damping factor (the probability to follow a random link) could be either fixed in the program or taken as an input parameter. A common value is 0.85. You can use the Power Iteration method to implement the algorithm. Other implementation is also allowed. Modify the <b>search</b> program from assignment 2. Now the ranking is based on not only the vector space model, but also the PageRank score. Use the linear combination to combine the cosine similary score with the PageRank score as following: score(d, q) = w1*cos-score(d, q) + w2*pagerank(d) where w1+w2=1. Note that w1 and w2 should be set as input parameters. If the PageRank score is too low, you could normalize it first before combining it with the cosine similarity score. Run <b>eval</b> program from assignment 2, repeat step 4 in assignment 2 with the new <b>search</b> program, and get the new result. The w1, w2 values you need to test will be: (0.5, 0.5), (0.7, 0.3). 
+</p>
+<p><i>Note:</i>
+You might need to rewrite your <b>invert</b> program from assignment 1 in order to extract the links between the documents. For the citation field (.X), each line has three numbers (for the full meaning of these numbers, you can refer to cite.info), and you only need to keep the lines with the middle number equal to 5. 
+</p>
+
+<p>2.
+Build your own search engine. You can develop your own crawler or use an existing crawler such as <a rel="noopener" href="https://www.scrapy.org/" target="_blank">Scrapy</a>, <a rel="noopener" href="https://pypi.org/project/beautifulsoup4/" target="_blank">Beautiful Soup</a>, or <a rel="noopener" href="https://nutch.apache.org/" target="_blank">Nutch</a> to crawl the web. You can decide the starting seed set, which could be a set of pages you are interested in, or pages from web directories. You can use a HTML parser to parse the HTML pages and then use your indexing program from assignment 1 to build the inverted index. You may need to modify the program because the web collection is different from the CACM collection. Your search engine should have a web interface to accept keyword-based queries. The results returned to the user should be ranked. You can use the vector space model (or another text-based retrieval model such as BM25) to implement the ranking algorithm. You should also implement a link-based ranking algorithm such as PageRank. The final ranking score would be the combination of the two, for example, score(d, q) = w1*cos-score(d, q) + w2*pagerank(d) where w1+w2=1. You can implement the PageRank algorithm by yourself or use an existing implementation. In the latter case, you need to cite the source in your report. Because the PageRank score can be low (not in the same magnitude as the cosine similarity score), you could normalize its value before calculating the final overall ranking score.
+</p>
+<p>
+<i>Note:</i>
+You can restrict your search engine to only support HTML pages. Also, you can focus on a particular domain. You should download minimum 500 web pages. The crawler program should be separate so that you don&#39;t need to run it during the demo. <br/>
+(<b style="color:red;">Important!</b>) When you run the scraper or crawler, please make sure you follow the Robot Exclusion Protocol and follow the politeness policy. Do not send multiple requests in a very short period of time!
+</p>
+
+<p><u>Requirements:</u><br/>
+You should submit a zipped file (i.e. cps842f25_prj_yourlastname.zip) to the course web site, including the report (e.g., the functions implemented in your system, the detailed design of your system, etc.), the source code, and the result files (PageRank score file and evaluation result files for project idea 1, the search interface and results for a few queries for project idea 2). 
+</p>
+
+<p>
+You need to do a demonstration after (or before) the due date (the information for demo will be posted later).
+</p>
+
+<p>
+This project could be done in groups of 2 or 3 students. Individual work is also fine. One group only needs to do one submission. Please make sure you include all group members&#39; names in the report.
+</p>
+
+
+
+
+<script type="module" src="https://s.brightspace.com/lib/bsi/2025.11.295/unbundled/mathjax.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+						if (document.querySelector('math, .d2l-element, .d2l-cplus-layout') || /\$\$|\\\(|\\\[|\\begin{|\\ref{|\\eqref{/.test(document.body.innerHTML)) {
+							document.querySelectorAll('mspace[linebreak="newline"]').forEach(elm => {
+								elm.setAttribute('style', 'display: block; height: 0.5rem;');
+							});
+
+							document.querySelectorAll('math mmultiscripts > none').forEach(elm => {
+								const mrow = document.createElementNS('http://www.w3.org/1998/Math/MathML', 'mrow');
+								elm.replaceWith(mrow);
+							});
+
+							window.D2L.MathJax.loadMathJax({
+								outputScale: 1.5,
+								renderLatex: true,
+								enableMML3Support: false
+							});
+						}
+					});</script><script type="module" src="https://s.brightspace.com/lib/bsi/2025.11.295/unbundled/prism.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					document.querySelectorAll('.d2l-code').forEach(code => {
+						window.D2L.Prism.formatCodeElement(code);
+					});
+				});</script><script type="module" src="https://s.brightspace.com/lib/bsi/2025.11.295/unbundled/embeds.js"></script><script type="text/javascript">document.addEventListener('DOMContentLoaded', function() {
+					window.D2L.EmbedRenderer.renderEmbeds(document.body);
+				});</script></body></html>
