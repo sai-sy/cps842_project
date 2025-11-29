@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Task 2 Search Engine</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2rem auto; max-width: 800px; }
+    form { margin-bottom: 1.5rem; }
+    label { display: inline-block; margin-right: 0.5rem; }
+    input[type="text"] { width: 60%; padding: 0.3rem; }
+    input[type="number"] { width: 5rem; }
+    .result { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid #ddd; }
+    .score { font-size: 0.9rem; color: #555; }
+  </style>
+</head>
+<body>
+  <h1>Web Search Engine</h1>
+  <form method="get">
+    <label>Query:</label>
+    <input type="text" name="q" value="{{ query }}" placeholder="Enter query" required />
+    <label>w1:</label>
+    <input type="number" step="0.1" name="w1" value="{{ w1 }}" min="0" max="1" />
+    <label>w2:</label>
+    <input type="number" step="0.1" name="w2" value="{{ w2 }}" min="0" max="1" />
+    <label>
+      <input type="checkbox" name="normalize" value="1" {% if normalize %}checked{% endif %} /> Normalize PageRank
+    </label>
+    <button type="submit">Search</button>
+  </form>
+
+  {% if results %}
+    <p>Showing {{ results|length }} results (w1={{ w1 }}, w2={{ w2 }})</p>
+    {% for result in results %}
+      <div class="result">
+        <h3><a href="{{ result.url }}" target="_blank" rel="noopener noreferrer">{{ result.title }}</a></h3>
+        <div class="score">
+          Score: {{ '%.4f'|format(result.score) }} | Cosine: {{ '%.4f'|format(result.cosine) }} | PageRank: {{ '%.4f'|format(result.pagerank) }}
+        </div>
+        <p>{{ result.snippet }}</p>
+        <div class="score">Document ID: {{ result.doc_id }}</div>
+      </div>
+    {% endfor %}
+  {% elif query %}
+    <p>No results found.</p>
+  {% endif %}
+</body>
+</html>
