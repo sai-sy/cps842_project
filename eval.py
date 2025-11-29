@@ -4,6 +4,7 @@ import argparse
 import re
 from collections import defaultdict
 from typing import Dict, Iterable, List, Sequence, Tuple
+import builtins
 
 from search import search
 import time
@@ -130,16 +131,33 @@ def r_precision(results: SearchResult, relevant_docs: Sequence[int]) -> float:
     return hits / r
 
 
-def evaluate(queries: QueryMap, qrels: RelevanceMap, postings_path: str, top_k: int) -> Tuple[float, float]:
+def evaluate(
+    queries: QueryMap,
+    qrels: RelevanceMap,
+    postings_path: str,
+    top_k: int,
+    pagerank_path: str | None,
+    w1: float,
+    w2: float,
+    normalize_pr: bool,
+) -> Tuple[float, float, List[float]]:
     ap_values: List[float] = []
     r_precision_values: List[float] = []
-    times = []
+    times: List[float] = []
     for qid, query_text in queries.items():
         print("Query ID:", qid)
         t0 = time.time()
 
         tokens = tokenize(query_text)
-        results = search(tokens, postings_path, top_k=top_k)
+        results = search(
+            tokens,
+            postings_path,
+            top_k=top_k,
+            pagerank_path=pagerank_path,
+            w_cos=w1,
+            w_pr=w2,
+            normalize_pr=normalize_pr,
+        )
         truncated_results = results
         relevant_docs = qrels.get(qid, [])
         ap = average_precision(truncated_results, relevant_docs)
@@ -164,11 +182,30 @@ def main() -> None:
     parser.add_argument("--qrels", default="qrels.text", help="Path to qrels file (default: qrels.text)")
     parser.add_argument("--postings", default="postings.txt", help="Path to postings file (default: postings.txt)")
     parser.add_argument("--top", type=int, default=5, help="Number of top documents to evaluate (default: 5)")
+    parser.add_argument("--pagerank", help="Path to PageRank score file")
+    parser.add_argument("--w1", type=float, default=1.0, help="Weight for cosine similarity score (default: 1.0)")
+    parser.add_argument("--w2", type=float, default=0.0, help="Weight for PageRank score (default: 0.0)")
+    parser.add_argument("--normalize-pr", action="store_true", help="Normalize PageRank values before combining")
     args = parser.parse_args()
+
+    weight_sum = args.w1 + args.w2
+    if abs(weight_sum - 1.0) > 1e-6:
+        parser.error("w1 + w2 must equal 1.0")
+    if args.w2 > 0 and not args.pagerank:
+        parser.error("Provide --pagerank when w2 is greater than zero")
 
     queries = parse_queries(args.queries)
     qrels = parse_qrels(args.qrels)
-    map_value, mean_r_precision, times = evaluate(queries, qrels, args.postings, args.top)
+    map_value, mean_r_precision, times = evaluate(
+        queries,
+        qrels,
+        args.postings,
+        args.top,
+        args.pagerank,
+        args.w1,
+        args.w2,
+        args.normalize_pr,
+    )
 
     print(f"MAP: {map_value:.4f}")
     print(f"Average R-Precision: {mean_r_precision:.4f}")

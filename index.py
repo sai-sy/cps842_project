@@ -89,7 +89,17 @@ def main():
     p.add_argument('--postings', required=True)
     p.add_argument('--stopwords')
     p.add_argument('--stem', action='store_true')
+    p.add_argument('--pagerank', help='Path to PageRank score file')
+    p.add_argument('--w1', type=float, default=1.0, help='Weight for cosine similarity score (default: 1.0)')
+    p.add_argument('--w2', type=float, default=0.0, help='Weight for PageRank score (default: 0.0)')
+    p.add_argument('--normalize-pr', action='store_true', help='Normalize PageRank values before combining')
     args = p.parse_args()
+
+    weight_sum = args.w1 + args.w2
+    if abs(weight_sum - 1.0) > 1e-6:
+        p.error('w1 + w2 must equal 1.0')
+    if args.w2 > 0 and not args.pagerank:
+        p.error('Provide --pagerank when w2 is greater than zero')
 
     stopwords = set()
     if args.stopwords:
@@ -122,7 +132,14 @@ def main():
             print("Query contains only stopwords — please enter another query.")
             continue
         query_terms = [stemmer.stem(term, 0, len(term) - 1) if stemmer else term for term in query_terms]
-        sorted_sim = search(query_terms, args.postings)
+        sorted_sim = search(
+            query_terms,
+            args.postings,
+            pagerank_path=args.pagerank,
+            w_cos=args.w1,
+            w_pr=args.w2,
+            normalize_pr=args.normalize_pr,
+        )
         if len(sorted_sim) == 0:
             print('No results')
         else:

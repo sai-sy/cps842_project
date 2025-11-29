@@ -6,12 +6,10 @@ import argparse
 import re
 import math
 from collections import defaultdict
-from typing import Dict, List, Tuple
 from porterstemmer import PorterStemmer
 
-def parse_cacm(path, link_relation=5):
+def parse_cacm(path):
     docs = {}
-    citations = defaultdict(set)
     with open(path, encoding='utf-8', errors='ignore') as f:
         doc_id = None
         field = None
@@ -28,15 +26,12 @@ def parse_cacm(path, link_relation=5):
                 title = ''
                 author = ''
                 abstract = ''
-                citations.setdefault(doc_id, set())
             elif line.startswith('.T'):
                 field = 'title'
             elif line.startswith('.A'):
-                field = 'author'
+                field='author'
             elif line.startswith('.W'):
                 field = 'abstract'
-            elif line.startswith('.X'):
-                field = 'citations'
             elif line.startswith('.'):
                 field = None
             else:
@@ -46,23 +41,9 @@ def parse_cacm(path, link_relation=5):
                     author += ' ' + line
                 elif field == 'abstract':
                     abstract += ' ' + line
-                elif field == 'citations':
-                    if not line.strip():
-                        continue
-                    parts = re.split(r"\s+", line.strip())
-                    if len(parts) < 3:
-                        continue
-                    try:
-                        target = int(parts[0])
-                        relation = int(parts[1])
-                    except ValueError:
-                        continue
-                    if relation != link_relation:
-                        continue
-                    citations.setdefault(doc_id, set()).add(target)
         if doc_id is not None:
-            docs[doc_id] = {'title': title, 'author': author, 'abstract': abstract}
-    return docs, citations
+            docs[doc_id] = {'title': title, 'author':author, 'abstract': abstract}
+    return docs
 
 def tokenize(text):
     return re.findall(r"\w+", text.lower())
@@ -72,7 +53,6 @@ def main():
     p.add_argument('input', help='cacm.all file')
     p.add_argument('--dict', required=True, help='dictionary output')
     p.add_argument('--postings', required=True, help='postings output')
-    p.add_argument('--links', help='output file for citation links')
     p.add_argument('--stopwords', help='stopwords file')
     p.add_argument('--stem', action='store_true', help='enable stemming')
     args = p.parse_args()
@@ -84,7 +64,7 @@ def main():
 
     stemmer = PorterStemmer() if args.stem else None
 
-    docs, citations = parse_cacm(args.input)
+    docs = parse_cacm(args.input)
     doc_count = len(docs)
     index = {}
 
@@ -141,15 +121,6 @@ def main():
                     f" {did}:{data['freq']}:{data['tf']:.6f}:{data['df']}:{data['idf']:.6f}:{data['weight']:.6f}:{nw:.6f}:{','.join(map(str, data['positions']))}"
                 )
             postings_file.write('\n')
-
-    if args.links:
-        with open(args.links, 'w', encoding='utf-8') as link_file:
-            for did in sorted(docs.keys()):
-                neighbors = sorted(citations.get(did, set()))
-                if neighbors:
-                    link_file.write(f"{did} {' '.join(map(str, neighbors))}\n")
-                else:
-                    link_file.write(f"{did}\n")
 
 if __name__ == '__main__':
     main()

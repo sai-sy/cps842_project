@@ -1,7 +1,6 @@
 from collections import defaultdict
 import math
 import builtins
-from typing import Dict, Tuple
 
 from dotenv import load_dotenv
 import os
@@ -14,52 +13,6 @@ def dprint(*args, **kwargs):
         builtins.print(*args, **kwargs)
 
 TOP_K = 10
-_PAGERANK_CACHE: Dict[Tuple[str, bool], Dict[str, float]] = {}
-
-def load_pagerank_scores(path: str, normalize: bool) -> Dict[str, float]:
-    cache_key = (path, normalize)
-    if cache_key in _PAGERANK_CACHE:
-        return _PAGERANK_CACHE[cache_key]
-
-    scores: Dict[str, float] = {}
-    with open(path, "r", encoding="utf-8") as handle:
-        for line in handle:
-            parts = line.strip().split()
-            if len(parts) < 2:
-                continue
-            did = parts[0]
-            try:
-                score = float(parts[1])
-            except ValueError:
-                continue
-            scores[did] = score
-
-    if normalize and scores:
-        values = list(scores.values())
-        v_min = min(values)
-        v_max = max(values)
-        if v_max - v_min > 0:
-            scores = {did: (value - v_min) / (v_max - v_min) for did, value in scores.items()}
-        else:
-            scores = {did: 1.0 for did in scores}
-
-    _PAGERANK_CACHE[cache_key] = scores
-    return scores
-
-def combine_scores(sim, pagerank_scores, w_cos, w_pr):
-    weight_sum = w_cos + w_pr
-    if weight_sum and abs(weight_sum - 1.0) > 1e-6:
-        w_cos = w_cos / weight_sum
-        w_pr = w_pr / weight_sum
-
-    if not pagerank_scores or w_pr == 0:
-        return sim
-
-    combined = {}
-    for did, cos_score in sim.items():
-        pr_score = pagerank_scores.get(did, 0.0)
-        combined[did] = w_cos * cos_score + w_pr * pr_score
-    return combined
 
 def evaluateTerm(term, filename):
   term_data = {}
@@ -120,14 +73,8 @@ def compare(query_vector, filename, top_k=TOP_K):
       dprint('sim[did]', sim[did])
   return sim
 
-def search(query_terms, filename, top_k=TOP_K, pagerank_path=None, w_cos=1.0, w_pr=0.0, normalize_pr=True):
+def search(query_terms, filename, top_k=TOP_K):
   query_vector = evaluate(query_terms, filename)
-  sim = compare(query_vector, filename, top_k=top_k)
-
-  pagerank_scores = None
-  if pagerank_path and w_pr != 0.0:
-    pagerank_scores = load_pagerank_scores(pagerank_path, normalize_pr)
-
-  combined = combine_scores(sim, pagerank_scores, w_cos, w_pr)
-  sorted_sim = sorted(combined.items(), key=lambda item: item[1], reverse=True)
+  sim = compare(query_vector, filename)
+  sorted_sim = sorted(sim.items(), key=lambda item: item[1], reverse=True)
   return sorted_sim
