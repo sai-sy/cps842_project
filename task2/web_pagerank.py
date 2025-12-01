@@ -55,7 +55,8 @@ def power_iteration(
     if n == 0:
         return {}
     rank = {doc: 1.0 / n for doc in doc_ids}
-    for _ in range(max_iter):
+    delta = float("inf")
+    for iteration in range(1, max_iter + 1):
         new_rank = {doc: (1.0 - damping) / n for doc in doc_ids}
         dangling_mass = sum(rank[doc] for doc in doc_ids if not adjacency.get(doc))
         dangling_share = damping * dangling_mass / n
@@ -71,7 +72,15 @@ def power_iteration(
         delta = sum(abs(new_rank[doc] - rank.get(doc, 0.0)) for doc in doc_ids)
         rank = new_rank
         if delta < tol:
+            print(
+                f"[pagerank] Iteration {iteration}: delta={delta:.6f} (converged)",
+                flush=True,
+            )
             break
+        if iteration == 1 or iteration % 5 == 0:
+            print(f"[pagerank] Iteration {iteration}: delta={delta:.6f}", flush=True)
+    else:
+        print(f"[pagerank] Reached max iterations ({max_iter}) with delta={delta:.6f}", flush=True)
     return rank
 
 
@@ -100,17 +109,28 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     corpus_path = Path(args.input)
+    print(f"[pagerank] Loading corpus from {corpus_path}")
     documents = load_corpus(corpus_path)
     if not documents:
         raise SystemExit("No documents found. Crawl pages before running PageRank.")
+    print(f"[pagerank] Loaded {len(documents)} documents from {corpus_path}")
 
+    print("[pagerank] Building link graph ...")
     adjacency = build_graph(documents)
     doc_ids = sorted(adjacency.keys())
+    edge_count = sum(len(targets) for targets in adjacency.values())
+    print(f"[pagerank] Graph has {len(doc_ids)} nodes and {edge_count} edges")
+
+    print(
+        f"[pagerank] Running power iteration (max_iter={args.max_iter}, damping={args.damping}, tol={args.tol})"
+    )
     ranks = power_iteration(doc_ids, adjacency, args.damping, args.max_iter, args.tol)
     if args.normalize:
+        print("[pagerank] Normalizing PageRank scores to [0, 1]")
         ranks = normalize(ranks)
 
     output_path = Path(args.output)
+    print(f"[pagerank] Writing PageRank scores to {output_path}")
     output_path.write_text(json.dumps(ranks, indent=2), encoding="utf-8")
     print(f"Computed PageRank for {len(doc_ids)} documents. Output: {output_path}")
 

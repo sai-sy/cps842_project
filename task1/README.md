@@ -1,4 +1,4 @@
-# CPS84 A2
+# CPS842 Final Project Task 1
 
 Saihaan Syed
 501105781
@@ -43,5 +43,9 @@ Assignment 2 Step 4 re-run with the PageRank-augmented search (top 10 documents 
 
 - `w1=0.5`, `w2=0.5`, normalized PageRank: `MAP = 0.0918`, `Avg R-Precision = 0.1213`, `Avg time = 0.178s`
 - `w1=0.7`, `w2=0.3`, normalized PageRank: `MAP = 0.0992`, `Avg R-Precision = 0.1294`, `Avg time = 0.193s`
+
+### Comparison to Assignment 2 baseline
+  
+Assignment 2 reported `MAP = 0.1023`, `Avg R-Precision = 0.1255`, and `Avg time = 0.149933s` without PageRank blending. Incorporating PageRank narrows the MAP gap but stays slightly below the baseline (`-0.0105` with equal weights and `-0.0031` when TF-IDF is emphasized), while R-Precision surpasses the baseline only when more weight is given to TF-IDF (`+0.0039`). Both PageRank runs incur higher latency (approximately +0.028s to +0.043s per query) due to the extra scoring blend.
 
 Use these settings to compare how emphasizing PageRank shifts overall effectiveness.

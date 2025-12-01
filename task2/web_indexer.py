@@ -52,7 +52,13 @@ def build_index(
     doc_norm_sums: Dict[str, float] = defaultdict(float)
     metadata: Dict[str, Dict] = {}
 
-    for doc in documents:
+    num_docs = len(documents)
+    if num_docs == 0:
+        return {}, {}, {}, {}
+
+    print(f"[indexer] Building term frequencies for {num_docs} documents", flush=True)
+
+    for idx, doc in enumerate(documents, start=1):
         doc_id = str(doc["doc_id"])
         text_parts = [doc.get("title", ""), doc.get("content", "")]
         tokens = tokenize(" ".join(text_parts))
@@ -74,11 +80,16 @@ def build_index(
             "snippet": doc.get("content", "")[:240],
         }
 
-    num_docs = len(documents)
+        if idx % 100 == 0 or idx == num_docs:
+            print(f"[indexer] Processed {idx}/{num_docs} documents", flush=True)
+
     dictionary: Dict[str, Dict[str, float]] = {}
     postings: Dict[str, List[dict]] = {}
+    total_terms = len(term_doc_freq)
+    if total_terms:
+        print(f"[indexer] Calculating weights for {total_terms} terms", flush=True)
 
-    for term, doc_freqs in term_doc_freq.items():
+    for term_idx, (term, doc_freqs) in enumerate(term_doc_freq.items(), start=1):
         df = len(doc_freqs)
         if df == 0:
             continue
@@ -92,13 +103,18 @@ def build_index(
             postings_list.append({"doc_id": doc_id, "weight": weight})
         postings[term] = sorted(postings_list, key=lambda item: item["weight"], reverse=True)
 
+        if term_idx % 500 == 0 or term_idx == total_terms:
+            print(f"[indexer] Scored {term_idx}/{total_terms} terms", flush=True)
+
     doc_norms = {doc_id: math.sqrt(value) for doc_id, value in doc_norm_sums.items() if value > 0}
+    print(f"[indexer] Computed norms for {len(doc_norms)} documents", flush=True)
     return dictionary, postings, doc_norms, metadata
 
 
 def write_json(path: Path, data) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(data, indent=2), encoding="utf-8")
+    print(f"[indexer] Wrote {path}", flush=True)
 
 
 def parse_args() -> argparse.Namespace:
@@ -116,15 +132,25 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
     corpus_path = Path(args.input)
+    print(f"[indexer] Loading corpus from {corpus_path}")
     documents = read_corpus(corpus_path)
     if not documents:
         raise SystemExit("No documents found in the corpus. Run the crawler first.")
+    print(f"[indexer] Loaded {len(documents)} documents from {corpus_path}")
 
+    if args.stopwords:
+        print(f"[indexer] Loading stopwords from {args.stopwords}")
     stopwords = load_stopwords(args.stopwords)
-    stemmer = PorterStemmer() if args.stem else None
+    print(f"[indexer] Loaded {len(stopwords)} stopwords")
 
+    stemmer = PorterStemmer() if args.stem else None
+    if stemmer:
+        print("[indexer] Porter stemming is enabled")
+
+    print("[indexer] Building inverted index ...")
     dictionary, postings, doc_norms, metadata = build_index(documents, stopwords, stemmer)
 
+    print("[indexer] Writing index artifacts to disk ...")
     write_json(Path(args.dict), dictionary)
     write_json(Path(args.postings), postings)
     write_json(Path(args.doc_norms), doc_norms)
